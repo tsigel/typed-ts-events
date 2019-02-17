@@ -12,8 +12,10 @@
     "build": "tsc && browserify -s events -o dist/events.js dist/index.js && uglifyjs dist/events.js -o dist/events.min.js",
     "preversion": "npm run test",
     "postversion": "npm publish",
+    "prepublish": "npm run coveralls",
     "postpublish": "git push",
-    "test": "jest"
+    "test": "jest",
+    "coveralls": "jest --coverage && cat coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -52,6 +54,7 @@
   "devDependencies": {
     "@types/jest": "^24.0.5",
     "browserify": "^16.2.3",
+    "coveralls": "^3.0.2",
     "jest": "^24.1.0",
     "ts-jest": "^23.10.5",
     "typescript": "^3.3.3",

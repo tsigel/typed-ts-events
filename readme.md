@@ -1,4 +1,10 @@
-# Typed Events v1.0.3  
+[![License][license-image]][license-url] ![Coverage badge gree][coverage-badge-green]
+
+[license-url]: https://opensource.org/licenses/MIT
+[license-image]: https://img.shields.io/npm/l/make-coverage-badge.svg
+[coverage-badge-green]:https://img.shields.io/badge/Coverage-100%25-brightgreen.svg
+
+# Typed Events 
 
 Библиотека для работы с типизированными событиями в TypeScript и javascript.
 
