@@ -7,7 +7,7 @@
 ### Установка
 
 ```bash
-npm i typed-events --save
+npm i typed-ts-events --save
 ```
 
 ## EventEmitter
