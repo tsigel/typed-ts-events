@@ -20,7 +20,7 @@ npm i typed-ts-events --save
 Подписываемся на событие. 
 
 ```typescript
-import { EventEmitter } from 'typed-events';
+import { EventEmitter } from 'typed-ts-events';
 
 
 const emitter = new EventEmitter<{test: number}>();
@@ -51,4 +51,25 @@ emitter.on('test', (data: number) => {
    emitter.off(null, handler); // Отпишется во всех именах от обработчика `handler`
    emitter.off(handler); // Отпишется во всех именах от обработчика `handler`
    emitter.off(); // Отпишется от всех событий
+```
+
+### trigger 
+Запускает событие.
+
+Параметры:
++ eventName - имя запускаемого события
++ data - данные которые будут переданы в обработчики событий
+
+Пример:
+```typescript
+import { EventEmitter } from 'typed-ts-events';
+
+
+const emitter = new EventEmitter<{test: number}>();
+
+emitter.on('test', (data: number) => {
+    ...
+});
+
+emitter.trigger('test', 111);
 ```
