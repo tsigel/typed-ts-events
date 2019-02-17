@@ -1,4 +1,4 @@
-# Typed Events v1.0.0     
+# Typed Events v1.0.3  
 
 Библиотека для работы с типизированными событиями в TypeScript и javascript.
 
