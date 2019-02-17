@@ -1,0 +1,60 @@
+{
+  "name": "typed-events",
+  "version": "0.0.0",
+  "description": "Typed events for typescript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepare": "npm test && npm run build",
+    "build": "tsc && browserify -s events -o dist/events.js dist/index.js && uglifyjs dist/events.js -o dist/events.min.js",
+    "preversion": "npm run test",
+    "postversion": "npm publish",
+    "postpublish": "git push",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsigel/typed-events.git"
+  },
+  "keywords": [
+    "typed",
+    "events",
+    "typescript",
+    "eventemitter"
+  ],
+  "author": "tsddaniil@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tsigel/typed-events/issues"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testMatch": [
+      "**/test/*test.+(ts)"
+    ]
+  },
+  "homepage": "https://github.com/tsigel/typed-events#readme",
+  "devDependencies": {
+    "@types/jest": "^24.0.5",
+    "browserify": "^16.2.3",
+    "jest": "^24.1.0",
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.3.3",
+    "uglify-js": "^3.4.9"
+  }
+}

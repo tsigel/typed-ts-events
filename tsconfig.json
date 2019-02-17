@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "strict": true,
+    "preserveConstEnums": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "outDir": "dist"
+  },
+  "files": [
+    "src/index.ts"
+  ],
+  "exclude": ["node_modules"]
+}
