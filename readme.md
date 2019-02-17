@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/tsigel/typed-ts-events/badge.svg)](https://coveralls.io/github/tsigel/typed-ts-events)
+
 # Typed Events 
 
 Библиотека для работы с типизированными событиями в TypeScript и javascript.
