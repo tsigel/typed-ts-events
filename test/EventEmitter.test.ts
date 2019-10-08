@@ -41,6 +41,9 @@ describe('Event Emitter', () => {
             count++;
         });
 
+        expect(emitter.hasListeners('test-void')).toBe(true);
+        expect(emitter.getActiveEvents().sort()).toEqual(['test-number', 'test-string', 'test-object', 'test-void'].sort());
+
         emitter.trigger('test-number', 1);
         emitter.trigger('test-string', '1');
         emitter.trigger('test-object', { test: '1' });
@@ -58,7 +61,9 @@ describe('Event Emitter', () => {
         emitter.once('test-void', () => {
             count++;
         });
+        expect(emitter.hasListeners('test-void')).toBe(true);
         emitter.trigger('test-void', void 0);
+        expect(emitter.hasListeners('test-void')).toBe(false);
         emitter.trigger('test-void', void 0);
         expect(count).toBe(1);
     });
@@ -98,12 +103,14 @@ describe('Event Emitter', () => {
                 count++;
             });
 
+            expect(emitter.hasListeners('test-void')).toBe(true);
             emitter.trigger('test-number', 1);
             emitter.trigger('test-string', '1');
             emitter.trigger('test-object', { test: '1' });
             emitter.trigger('test-void', void 0);
 
             emitter.off();
+            expect(emitter.hasListeners('test-void')).toBe(false);
 
             emitter.trigger('test-number', 1);
             emitter.trigger('test-string', '1');

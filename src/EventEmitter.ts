@@ -3,6 +3,14 @@ export class EventEmitter<T extends Record<keyof any, any>> {
     private _events: Record<keyof T, Array<IEventData<T[keyof T], any>>> = Object.create(null);
 
 
+    public hasListeners<K extends keyof T>(eventName: K): boolean {
+        return !!(this._events[eventName] && this._events[eventName].length);
+    }
+
+    public getActiveEvents(): Array<keyof T> {
+        return Object.keys(this._events).filter(name => this.hasListeners(name));
+    }
+
     public trigger<K extends keyof T>(eventName: K, params: Readonly<T[K]>): void {
         if (this._events[eventName]) {
             this._events[eventName] = this._events[eventName].filter(data => {
@@ -33,8 +41,8 @@ export class EventEmitter<T extends Record<keyof any, any>> {
     public off(handler: EventEmitter.IHandler<T[keyof T], any>): void
     public off(eventName: TOrEmpty<keyof T>, handler: TOrEmpty<EventEmitter.IHandler<T[keyof T], any>>): void
     public off<K extends keyof T>(arg1?: any, arg2?: any): void {
-        const eventName = typeof arg1 === 'string' ? arg1 : null;
-        const handler = typeof arg2 === 'function' ? arg2 : typeof arg1 === 'function' ? arg1 : null;
+        const eventName: TOrEmpty<keyof T> = typeof arg1 === 'string' ? arg1 : null;
+        const handler: TOrEmpty<EventEmitter.IHandler<T[keyof T], any>> = typeof arg2 === 'function' ? arg2 : typeof arg1 === 'function' ? arg1 : null;
 
         if (!eventName) {
             Object.keys(this._events).forEach(eventName => {
