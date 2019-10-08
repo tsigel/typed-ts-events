@@ -165,6 +165,8 @@ describe('Event Emitter', () => {
                 count++;
             };
 
+            emitter.off('test-number', handler1);
+
             emitter.on('test-number', handler1);
             emitter.on('test-string', handler1);
             emitter.on('test-object', handler1);
