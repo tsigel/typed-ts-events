@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
     "module": "commonjs",
     "strict": true,
     "preserveConstEnums": true,
@@ -7,7 +8,9 @@
     "noUnusedLocals": true,
     "declaration": true,
     "outDir": "dist",
-    "lib": ["es2015"]
+    "lib": [
+      "es2015"
+    ]
   },
   "files": [
     "src/index.ts"

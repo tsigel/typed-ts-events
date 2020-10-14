@@ -40,6 +40,7 @@ export class EventEmitter<T extends Record<keyof any, any>> {
     public off(eventName: keyof T): void
     public off(handler: EventEmitter.IHandler<T[keyof T], any>): void
     public off(eventName: TOrEmpty<keyof T>, handler: TOrEmpty<EventEmitter.IHandler<T[keyof T], any>>): void
+    public off<K extends keyof T>(eventName: K, handler: TOrEmpty<EventEmitter.IHandler<T[K], any>>): void
     public off<K extends keyof T>(arg1?: any, arg2?: any): void {
         const eventName: TOrEmpty<keyof T> = typeof arg1 === 'string' ? arg1 : null;
         const handler: TOrEmpty<EventEmitter.IHandler<T[keyof T], any>> = typeof arg2 === 'function' ? arg2 : typeof arg1 === 'function' ? arg1 : null;

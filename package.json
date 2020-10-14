@@ -2,14 +2,14 @@
   "name": "typed-ts-events",
   "version": "1.1.1",
   "description": "Typed events for typescript",
-  "main": "dist/index.js",
+  "main": "dist/events.min.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "prepare": "npm test && npm run build",
-    "build": "tsc -p ./ && browserify -s events -o dist/events.js dist/index.js && uglifyjs dist/events.js -o dist/events.min.js",
+    "build": "npx webpack",
     "preversion": "npm run test",
     "postversion": "npm publish",
     "prepublish": "npm run coveralls",
@@ -52,12 +52,13 @@
   },
   "homepage": "https://github.com/tsigel/typed-events#readme",
   "devDependencies": {
-    "@types/jest": "^24.0.5",
-    "browserify": "^16.2.3",
+    "@types/jest": "^26.0.14",
     "coveralls": "^3.0.2",
-    "jest": "^24.1.0",
-    "ts-jest": "^23.10.5",
-    "typescript": "^3.6.3",
-    "uglify-js": "^3.4.9"
+    "jest": "^26.5.3",
+    "ts-jest": "^26.4.1",
+    "ts-loader": "^8.0.5",
+    "typescript": "^3.9.7",
+    "webpack": "^5.1.0",
+    "webpack-cli": "^4.0.0"
   }
 }
