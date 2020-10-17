@@ -82,6 +82,21 @@ describe('Event Emitter', () => {
         expect(count).toBe(1);
     });
 
+    it('off in trigger', () => {
+        let count = 0;
+        const handler1 = () => {
+            emitter.off('test-void', handler1);
+            count++;
+        };
+
+        emitter.on('test-void', handler1);
+
+        emitter.trigger('test-void', void 0);
+        emitter.trigger('test-void', void 0);
+
+        expect(count).toBe(1);
+    });
+
     describe('off', () => {
 
         it('Without arguments', () => {

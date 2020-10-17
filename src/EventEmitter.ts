@@ -1,7 +1,11 @@
 export class EventEmitter<T extends Record<keyof any, any>> {
 
+    protected readonly catchHandler: (e: Error) => void;
     private _events: Record<keyof T, Array<IEventData<T[keyof T], any>>> = Object.create(null);
 
+    constructor(catchHandler?: (e: Error) => void) {
+        this.catchHandler = catchHandler || (() => undefined);
+    }
 
     public hasListeners<K extends keyof T>(eventName: K): boolean {
         return !!(this._events[eventName] && this._events[eventName].length);
@@ -13,13 +17,15 @@ export class EventEmitter<T extends Record<keyof any, any>> {
 
     public trigger<K extends keyof T>(eventName: K, params: Readonly<T[K]>): void {
         if (this._events[eventName]) {
-            this._events[eventName] = this._events[eventName].filter(data => {
+            this._events[eventName].slice().forEach(data => {
                 try {
                     data.handler.call(data.context, params);
                 } catch (e) {
-
+                    this.catchHandler(e);
                 }
-                return !data.once;
+                if (data.once) {
+                    this.off(eventName, data.handler);
+                }
             });
             if (!this._events[eventName].length) {
                 delete this._events[eventName];
@@ -58,7 +64,8 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         }
 
         if (eventName in this._events) {
-            this._events[eventName] = this._events[eventName].filter(item => item.handler !== handler);
+            const index = this._events[eventName].map(item => item.handler).indexOf(handler);
+            this._events[eventName].splice(index, 1);
         }
     }
 
