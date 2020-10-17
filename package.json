@@ -1,6 +1,6 @@
 {
   "name": "typed-ts-events",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Typed events for typescript",
   "main": "dist/events.min.js",
   "types": "dist/index.d.ts",
