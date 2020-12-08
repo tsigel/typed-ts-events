@@ -1,7 +1,7 @@
 export class EventEmitter<T extends Record<keyof any, any>> {
 
     protected readonly catchHandler: (e: Error) => void;
-    private _events: Record<keyof T, Array<IEventData<T[keyof T], any>>> = Object.create(null);
+    private _events: EventDataStorage<T> = Object.create(null);
 
     constructor(catchHandler?: (e: Error) => void) {
         this.catchHandler = catchHandler || (() => undefined);
@@ -15,7 +15,7 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         return Object.keys(this._events).filter(name => this.hasListeners(name));
     }
 
-    public trigger<K extends keyof T>(eventName: K, params: Readonly<T[K]>): void {
+    public trigger<K extends keyof T>(eventName: K, params: T[K]): void {
         if (this._events[eventName]) {
             this._events[eventName].slice().forEach(data => {
                 try {
@@ -89,7 +89,11 @@ type TOrEmpty<T> = T | null | undefined;
 export namespace EventEmitter {
 
     export interface IHandler<T, SELF> {
-        (this: SELF, data: Readonly<T>): any;
+        (this: SELF, data: T): any;
     }
 
+}
+
+type EventDataStorage<T extends Record<string, any>> = {
+    [Key in keyof T]: Array<IEventData<T[Key], any>>;
 }
