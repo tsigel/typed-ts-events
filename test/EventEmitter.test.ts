@@ -1,16 +1,16 @@
 import { EventEmitter } from '../src';
 
-interface ITestEventsModel {
-    'test-number': number;
-    'test-string': string;
-    'test-object': { test: string };
-    'test-void': void;
-}
+type Schema = [
+    ['test-number', number],
+    ['test-string', string],
+    ['test-object', { test: string }],
+    ['test-void', void]
+]
 
 describe('Event Emitter', () => {
 
-    class TestEmitter extends EventEmitter<ITestEventsModel> {
-        public trigger<K extends keyof ITestEventsModel>(event: K, prop: ITestEventsModel[K]): this {
+    class TestEmitter extends EventEmitter<EventEmitter.SchemaToEvents<Schema>> {
+        public trigger<K extends keyof EventEmitter.SchemaToEvents<Schema>>(event: K, prop: EventEmitter.SchemaToEvents<Schema>[K]): this {
             return super.trigger(event, prop);
         }
     }

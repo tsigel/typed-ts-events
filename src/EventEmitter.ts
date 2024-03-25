@@ -194,6 +194,16 @@ export namespace EventEmitter {
     export interface Handler<T, SELF> {
         (this: SELF, data: T): any;
     }
+
+    type Pairs<T extends Array<[string, any]>> = Extract<{
+        [Index in keyof T]: T[Index] extends [string, any] ? T[Index] : never
+    }[keyof T], [string, any]>;
+
+    type FilterTuple<K extends string, Schema extends Array<[string, any]>> = Extract<Pairs<Schema>, [K, any]>;
+
+    export type SchemaToEvents<T extends Array<[string, any]>> = {
+        [Key in Pairs<T>[0]]: FilterTuple<Key, T>[1]
+    };
 }
 
 type EventDataStorage<T extends Record<string, any>> = {
