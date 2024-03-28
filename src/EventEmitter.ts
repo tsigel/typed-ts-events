@@ -1,6 +1,6 @@
-import Handler = EventEmitter.Handler;
 
-export class EventEmitter<T extends Record<keyof any, any>> {
+
+export class EventEmitter<T extends Record<string, any>> implements IEventEmitter<T> {
 
     protected readonly catchHandler: (e: Error) => void;
     protected readonly _eId: string;
@@ -12,7 +12,8 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         this.catchHandler = catchHandler || (() => undefined);
     }
 
-    public listenTo<E extends ListenEmitter<any>, K extends keyof EmitterEvents<E>, Self = undefined>(emitter: E, event: K, handler: EventEmitter.Handler<EmitterEvents<E>[K], Self>, self?: Self): this {
+    // public listenTo<K extends string, E extends IEventEmitter<Record<K, any>>, Self = undefined>(emitter: E, event: K, handler: Handler<EmitterEvents<E>[K], Self>, self?: Self): this {
+    public listenTo<K extends string, E extends IEventEmitter<Record<K, any>>, Self = undefined>(emitter: E, event: K, handler: Handler<EmitterEvents<E>[K], Self>, self?: Self): this {
         this._saveOutEvent({
             event, handler, emitter
         });
@@ -20,19 +21,22 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         return this;
     }
 
-    public listenToOnce<E extends ListenEmitter<any>, K extends keyof EmitterEvents<E>, Self = undefined>(emitter: E, event: K, handler: EventEmitter.Handler<EmitterEvents<E>[K], Self>, context?: Self): this {
-        const self = this;
-        const proxy: EventEmitter.Handler<EmitterEvents<E>[K], Self> = function (data) {
+    public listenToOnce<K extends string, E extends IEventEmitter<Record<K, any>>, Self = undefined>(emitter: E, event: K, handler: Handler<EmitterEvents<E>[K], Self>, self?: Self): this {
+        const context = this;
+        const proxy: Handler<EmitterEvents<E>[K], Self> = function (data) {
             handler.call(this, data);
-            self.stopListenTo(emitter, event, handler);
+            context.stopListenTo(emitter, event, handler);
         };
         this._saveOutEvent({ event, handler, emitter, proxy });
-        emitter.once(event, proxy, context);
+        emitter.once(event, proxy, self);
 
         return this;
     }
 
-    public stopListenTo<E extends ListenEmitter<any>, K extends keyof EmitterEvents<E>>(emitter: E, event?: K, handler?: EventEmitter.Handler<EmitterEvents<E>[K], any>): this {
+    public stopListenTo<E extends IEventEmitter<{}>>(emitter: E): this
+    public stopListenTo<K extends string, E extends IEventEmitter<Record<K, any>>>(emitter: E, event: K): this
+    public stopListenTo<K extends string, E extends IEventEmitter<Record<K, any>>>(emitter: E, event: K, handler: Handler<EmitterEvents<E>[K], any>): this
+    public stopListenTo<K extends string, E extends IEventEmitter<Record<K, any>>>(emitter: E, event?: K, handler?: Handler<EmitterEvents<E>[K], any>): this {
         if (!this._outEvents[(emitter as any)._eId]) {
             return this;
         }
@@ -86,6 +90,44 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         return Object.keys(this._events).filter(name => this.hasListeners(name));
     }
 
+    public on<K extends keyof T, SELF = undefined>(eventName: K, handler: Handler<T[K], SELF>, context?: SELF): this {
+        return this._on(eventName, handler, context, false);
+    }
+
+
+    public once<K extends keyof T, SELF = undefined>(eventName: K, handler: Handler<T[K], SELF>, context?: SELF): this {
+        return this._on(eventName, handler, context, true);
+    }
+
+    public off(): this
+    public off(eventName: keyof T): this
+    public off(handler: Handler<T[keyof T], any>): this
+    public off(eventName: TOrEmpty<keyof T>, handler: TOrEmpty<Handler<T[keyof T], any>>): this
+    public off<K extends keyof T>(eventName: K, handler: TOrEmpty<Handler<T[K], any>>): this
+    public off<K extends keyof T>(arg1?: any, arg2?: any): this {
+        const eventName: TOrEmpty<keyof T> = typeof arg1 === 'string' ? arg1 : null;
+        const handler: TOrEmpty<Handler<T[keyof T], any>> = typeof arg2 === 'function' ? arg2 : typeof arg1 === 'function' ? arg1 : null;
+
+        if (!eventName) {
+            Object.keys(this._events).forEach(eventName => {
+                this.off(eventName as keyof T, handler);
+            });
+            return this;
+        }
+
+        if (!handler) {
+            delete this._events[eventName];
+            return this;
+        }
+
+        if (eventName in this._events) {
+            const index = this._events[eventName].map(item => item.handler).indexOf(handler);
+            this._events[eventName].splice(index, 1);
+        }
+
+        return this;
+    }
+
     protected trigger<K extends keyof T>(eventName: K, params: T[K]): this {
         if (!this._events[eventName]) {
             return this;
@@ -108,45 +150,7 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         return this;
     }
 
-    public on<K extends keyof T, SELF = undefined>(eventName: K, handler: EventEmitter.Handler<T[K], SELF>, context?: SELF): this {
-        return this._on(eventName, handler, context, false);
-    }
-
-    public once<K extends keyof T, SELF = undefined>(eventName: K, handler: EventEmitter.Handler<T[K], SELF>, context?: SELF): this {
-        return this._on(eventName, handler, context, true);
-    }
-
-
-    public off(): this
-    public off(eventName: keyof T): this
-    public off(handler: EventEmitter.Handler<T[keyof T], any>): this
-    public off(eventName: TOrEmpty<keyof T>, handler: TOrEmpty<EventEmitter.Handler<T[keyof T], any>>): this
-    public off<K extends keyof T>(eventName: K, handler: TOrEmpty<EventEmitter.Handler<T[K], any>>): this
-    public off<K extends keyof T>(arg1?: any, arg2?: any): this {
-        const eventName: TOrEmpty<keyof T> = typeof arg1 === 'string' ? arg1 : null;
-        const handler: TOrEmpty<EventEmitter.Handler<T[keyof T], any>> = typeof arg2 === 'function' ? arg2 : typeof arg1 === 'function' ? arg1 : null;
-
-        if (!eventName) {
-            Object.keys(this._events).forEach(eventName => {
-                this.off(eventName as keyof T, handler);
-            });
-            return this;
-        }
-
-        if (!handler) {
-            delete this._events[eventName];
-            return this;
-        }
-
-        if (eventName in this._events) {
-            const index = this._events[eventName].map(item => item.handler).indexOf(handler);
-            this._events[eventName].splice(index, 1);
-        }
-
-        return this;
-    }
-
-    private _on<K extends keyof T, SELF = undefined>(eventName: K, handler: EventEmitter.Handler<T[K], SELF>, context: SELF | undefined, once: boolean): this {
+    private _on<K extends keyof T, SELF = undefined>(eventName: K, handler: Handler<T[K], SELF>, context: SELF | undefined, once: boolean): this {
         if (!this._events[eventName]) {
             this._events[eventName] = [];
         }
@@ -156,7 +160,7 @@ export class EventEmitter<T extends Record<keyof any, any>> {
         return this;
     }
 
-    private _saveOutEvent<E extends ListenEmitter<any>, K extends keyof EmitterEvents<E>, Self = undefined>({
+    private _saveOutEvent<K extends string, E extends IEventEmitter<Record<K, any>>, Self = undefined>({
                                                                                                                emitter,
                                                                                                                event,
                                                                                                                handler,
@@ -184,27 +188,25 @@ export class EventEmitter<T extends Record<keyof any, any>> {
 type EventData<T, SELF> = {
     once: boolean;
     context: SELF;
-    handler: EventEmitter.Handler<T, SELF>;
+    handler: Handler<T, SELF>;
 }
 
 type TOrEmpty<T> = T | null | undefined;
 
-export namespace EventEmitter {
 
-    export interface Handler<T, SELF> {
-        (this: SELF, data: T): any;
-    }
-
-    type Pairs<T extends Array<[string, any]>> = Extract<{
-        [Index in keyof T]: T[Index] extends [string, any] ? T[Index] : never
-    }[keyof T], [string, any]>;
-
-    type FilterTuple<K extends string, Schema extends Array<[string, any]>> = Extract<Pairs<Schema>, [K, any]>;
-
-    export type SchemaToEvents<T extends Array<[string, any]>> = {
-        [Key in Pairs<T>[0]]: FilterTuple<Key, T>[1]
-    };
+export interface Handler<T, SELF> {
+    (this: SELF, data: T): any;
 }
+
+type Pairs<T extends Array<[string, any]>> = Extract<{
+    [Index in keyof T]: T[Index] extends [string, any] ? T[Index] : never
+}[keyof T], [string, any]>;
+
+type FilterTuple<K extends string, Schema extends Array<[string, any]>> = Extract<Pairs<Schema>, [K, any]>;
+
+export type SchemaToEvents<T extends Array<[string, any]>> = {
+    [Key in Pairs<T>[0]]: FilterTuple<Key, T>[1]
+};
 
 type EventDataStorage<T extends Record<string, any>> = {
     [Key in keyof T]: Array<EventData<T[Key], any>>;
@@ -214,23 +216,30 @@ type OutEventStorage = {
     [Key: string]: OutEventStorageItem<any>;
 }
 
-type OutEventStorageItem<E extends EventEmitter<any>> = {
+type OutEventStorageItem<E extends IEventEmitter<{}>> = {
     emitter: E;
     events: Record<keyof EmitterEvents<E>, Array<OutStorageItem<E>>>;
 }
 
-type OutStorageItem<E extends EventEmitter<any>> = {
+type OutStorageItem<E extends IEventEmitter<{}>> = {
     handler: Handler<EmitterEvents<E>[keyof EmitterEvents<E>], any>;
     proxy?: Handler<EmitterEvents<E>[keyof EmitterEvents<E>], any>;
 }
 
-type SaveEventProps<E extends ListenEmitter<any>, K extends keyof EmitterEvents<E>, Self = undefined> = {
+type SaveEventProps<E extends IEventEmitter<{}>, K extends keyof EmitterEvents<E>, Self = undefined> = {
     event: K;
     handler: Handler<EmitterEvents<E>[K], Self>;
     proxy?: Handler<EmitterEvents<E>[K], Self>;
     emitter: E;
 }
 
-type ListenEmitter<E extends EventEmitter<any>> = Pick<E, 'on' | 'off' | 'once'>;
+type EmitterEvents<E> = E extends EventEmitter<infer R> ? R : never;
 
-type EmitterEvents<E extends ListenEmitter<any>> = E extends Pick<EventEmitter<infer R>, 'on' | 'off' | 'once'> ? R : never;
+export interface IEventEmitter<T extends Record<string, any>> {
+    on<K extends keyof T, Context = undefined>(event: K, handler: Handler<T[K], Context>, self?: Context): this;
+    once<K extends keyof T, Context = undefined>(event: K, handler: Handler<T[K], Context>, self?: Context): this;
+    off<K extends keyof T>(event: K, handler: Handler<T[K], any>): this;
+    off<K extends keyof T>(event: K): this;
+    off(event: null | undefined, handler: Handler<any, any>): this;
+    off(): this;
+}

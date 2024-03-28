@@ -1,4 +1,4 @@
-import { EventEmitter } from '../src';
+import { EventEmitter, SchemaToEvents } from '../src';
 
 type Schema = [
     ['test-number', number],
@@ -7,20 +7,33 @@ type Schema = [
     ['test-void', void]
 ]
 
+type Schema2 = [
+    ['test-number2', number],
+    ['test-string2', string],
+    ['test-object2', { test: string }],
+    ['test-void2', void]
+]
+
 describe('Event Emitter', () => {
 
-    class TestEmitter extends EventEmitter<EventEmitter.SchemaToEvents<Schema>> {
-        public trigger<K extends keyof EventEmitter.SchemaToEvents<Schema>>(event: K, prop: EventEmitter.SchemaToEvents<Schema>[K]): this {
+    class TestEmitter extends EventEmitter<SchemaToEvents<Schema>> {
+        public trigger<K extends keyof SchemaToEvents<Schema>>(event: K, prop: SchemaToEvents<Schema>[K]): this {
+            return super.trigger(event, prop);
+        }
+    }
+
+    class TestEmitter2 extends EventEmitter<SchemaToEvents<Schema2>> {
+        public trigger<K extends keyof SchemaToEvents<Schema2>>(event: K, prop: SchemaToEvents<Schema2>[K]): this {
             return super.trigger(event, prop);
         }
     }
 
     let emitter: TestEmitter;
-    let emitter2: TestEmitter;
+    let emitter2: TestEmitter2;
 
     beforeEach(() => {
         emitter = new TestEmitter;
-        emitter2 = new TestEmitter;
+        emitter2 = new TestEmitter2;
     });
 
     it('Create', () => {
@@ -227,24 +240,25 @@ describe('Event Emitter', () => {
 
         it('subscribe', () => {
             let count = 0;
-            emitter.listenTo(emitter2, 'test-number', (to_add: number) => {
+
+            emitter.listenTo(emitter2, 'test-number2', (to_add) => {
                 count = count + to_add;
             });
 
-            emitter2.trigger('test-number', 1);
-            emitter2.trigger('test-number', 1);
+            emitter2.trigger('test-number2', 1);
+            emitter2.trigger('test-number2', 1);
 
             expect(count).toBe(2);
         });
 
         it('subscribe once', () => {
             let count = 0;
-            emitter.listenToOnce(emitter2, 'test-number', (to_add: number) => {
+            emitter.listenToOnce(emitter2, 'test-number2', (to_add) => {
                 count = count + to_add;
             });
 
-            emitter2.trigger('test-number', 1);
-            emitter2.trigger('test-number', 1);
+            emitter2.trigger('test-number2', 1);
+            emitter2.trigger('test-number2', 1);
 
             expect(count).toBe(1);
         });
@@ -255,12 +269,12 @@ describe('Event Emitter', () => {
                 const handler = (to_add: number) => {
                     count = count + to_add;
                 };
-                emitter.listenToOnce(emitter2, 'test-number', handler);
-                emitter.listenTo(emitter2, 'test-number', (num) => {
+                emitter.listenToOnce(emitter2, 'test-number2', handler);
+                emitter.listenTo(emitter2, 'test-number2', (num) => {
                     count = count + num / 2;
                 });
-                emitter.stopListenTo(emitter2, 'test-number', handler);
-                emitter2.trigger('test-number', 1);
+                emitter.stopListenTo(emitter2, 'test-number2', handler);
+                emitter2.trigger('test-number2', 1);
                 expect(count).toBe(0.5);
             });
             it('Stop listen by event', () => {
@@ -271,17 +285,17 @@ describe('Event Emitter', () => {
                 const handler_void = () => {
                     count++;
                 };
-                emitter.listenTo(emitter2, 'test-number', handler_num);
-                emitter.listenTo(emitter2, 'test-void', handler_void);
+                emitter.listenTo(emitter2, 'test-number2', handler_num);
+                emitter.listenTo(emitter2, 'test-void2', handler_void);
 
-                emitter2.trigger('test-number', 1);
-                emitter2.trigger('test-void', void 0);
+                emitter2.trigger('test-number2', 1);
+                emitter2.trigger('test-void2', void 0);
 
-                emitter.stopListenTo(emitter2, 'test-number');
-                emitter.stopListenTo(emitter2, 'test-object');
+                emitter.stopListenTo(emitter2, 'test-number2');
+                emitter.stopListenTo(emitter2, 'test-object2');
 
-                emitter2.trigger('test-number', 1);
-                emitter2.trigger('test-void', void 0);
+                emitter2.trigger('test-number2', 1);
+                emitter2.trigger('test-void2', void 0);
 
                 expect(count).toBe(3);
             });
@@ -291,18 +305,18 @@ describe('Event Emitter', () => {
                 const handler_void = () => {
                     count++;
                 };
-                emitter.listenTo(emitter2, 'test-number', (num) => {
+                emitter.listenTo(emitter2, 'test-number2', (num) => {
                     count = count + num;
                 });
-                emitter.listenTo(emitter2, 'test-void', handler_void);
+                emitter.listenTo(emitter2, 'test-void2', handler_void);
 
-                emitter2.trigger('test-number', 1);
-                emitter2.trigger('test-void', void 0);
+                emitter2.trigger('test-number2', 1);
+                emitter2.trigger('test-void2', void 0);
 
                 emitter.stopListenTo(emitter2);
 
-                emitter2.trigger('test-number', 1);
-                emitter2.trigger('test-void', void 0);
+                emitter2.trigger('test-number2', 1);
+                emitter2.trigger('test-void2', void 0);
 
                 expect(count).toBe(2);
             });
@@ -315,16 +329,16 @@ describe('Event Emitter', () => {
                 const handler_void = () => {
                     count++;
                 };
-                emitter.listenTo(emitter2, 'test-number', handler_num);
-                emitter.listenTo(emitter2, 'test-void', handler_void);
+                emitter.listenTo(emitter2, 'test-number2', handler_num);
+                emitter.listenTo(emitter2, 'test-void2', handler_void);
 
-                emitter2.trigger('test-number', 1);
-                emitter2.trigger('test-void', void 0);
+                emitter2.trigger('test-number2', 1);
+                emitter2.trigger('test-void2', void 0);
 
                 emitter.stopListenTo(emitter);
 
-                emitter2.trigger('test-number', 1);
-                emitter2.trigger('test-void', void 0);
+                emitter2.trigger('test-number2', 1);
+                emitter2.trigger('test-void2', void 0);
 
                 expect(count).toBe(4);
             });
