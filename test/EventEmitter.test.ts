@@ -40,6 +40,38 @@ describe('Event Emitter', () => {
         new EventEmitter();
     });
 
+    it('listenAll', () => {
+        const events = Object.create(null);
+        emitter.listenAll((event) => {
+            if (!events[event]) {
+                events[event] = 0;
+            }
+            events[event]++;
+        });
+        emitter.trigger('test-number', 1);
+        emitter.trigger('test-number', 1);
+        emitter.trigger('test-object', { test: '123' });
+
+        expect(events).toEqual({ 'test-number': 2, 'test-object': 1 });
+    });
+
+    it('stopListenAll', () => {
+        const events = Object.create(null);
+        const handler = (event: string) => {
+            if (!events[event]) {
+                events[event] = 0;
+            }
+            events[event]++;
+        };
+        emitter.listenAll(handler);
+        emitter.trigger('test-number', 1);
+        emitter.trigger('test-object', { test: '123' });
+        emitter.stopListenAll(handler);
+        emitter.trigger('test-number', 1);
+
+        expect(events).toEqual({ 'test-number': 1, 'test-object': 1 });
+    });
+
     it('on', () => {
         let numberOk = false;
         let stringOk = false;
@@ -85,20 +117,6 @@ describe('Event Emitter', () => {
         expect(emitter.hasListeners('test-void')).toBe(true);
         emitter.trigger('test-void', void 0);
         expect(emitter.hasListeners('test-void')).toBe(false);
-        emitter.trigger('test-void', void 0);
-        expect(count).toBe(1);
-    });
-
-    it('event with exception', () => {
-        let count = 0;
-        const handler1 = () => {
-            throw new Error('Some error!');
-        };
-        const handler2 = () => {
-            count++;
-        };
-        emitter.on('test-void', handler1);
-        emitter.on('test-void', handler2);
         emitter.trigger('test-void', void 0);
         expect(count).toBe(1);
     });
@@ -232,6 +250,17 @@ describe('Event Emitter', () => {
             emitter.trigger('test-void', void 0);
 
             expect(count).toBe(12);
+        });
+
+        it('Stop listen by unsubscribe callback', () => {
+            let count = 0;
+            const unsubscribe = emitter.on('test-number', (n) => {
+                count += n;
+            });
+            emitter.trigger('test-number', 1);
+            unsubscribe();
+            emitter.trigger('test-number', 1);
+            expect(count).toBe(1);
         });
 
     });
