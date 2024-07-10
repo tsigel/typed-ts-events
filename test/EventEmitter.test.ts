@@ -136,6 +136,13 @@ describe('Event Emitter', () => {
         expect(count).toBe(1);
     });
 
+    it('off all in trigger', () => {
+        emitter.on('test-string', () => {
+            emitter.off();
+        });
+        emitter.trigger('test-string', '123');
+    });
+
     describe('off', () => {
 
         it('Without arguments', () => {

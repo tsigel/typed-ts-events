@@ -168,7 +168,7 @@ export class EventEmitter<T extends Record<string, any>> implements IEventEmitte
             }
         });
 
-        if (!this._events[eventName].length) {
+        if (!(this._events && this._events[eventName] && this._events[eventName].length)) {
             delete this._events[eventName];
         }
 
